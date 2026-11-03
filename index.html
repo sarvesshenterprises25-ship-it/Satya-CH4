@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Satya CH4 (Powered by LIFELOOP)</title>
+
+  <!-- PWA Manifest Link -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#022c22">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <!-- HTML5 QR Code Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  
+  <!-- QRCode.js Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); border-radius: 9999px; }
+
+    .pulse-ring {
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .satya-gradient {
+      background: linear-gradient(135deg, #047857 0%, #065f46 50%, #022c22 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 flex justify-center items-center min-h-screen font-sans p-0 sm:p-4 text-slate-800">
+
+  <!-- Mobile Frame Container -->
+  <div class="w-full max-w-md bg-slate-50 min-h-screen sm:min-h-[850px] sm:max-h-[890px] sm:rounded-[42px] shadow-2xl flex flex-col justify-between overflow-hidden relative border-0 sm:border-[8px] border-slate-800">
+
+    <!-- Top Status Bar -->
+    <div class="bg-slate-900 text-white px-6 pt-3 pb-2 flex justify-between items-center text-xs font-semibold z-30 select-none">
+      <span>10:04 PM</span>
+      <div class="flex items-center space-x-1.5">
+        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-2 py-0.5 rounded-full font-mono font-bold tracking-wider">
+          PLAY STORE READY v1.0
+        </span>
+      </div>
+      <div class="flex items-center space-x-1.5">
+        <i data-lucide="wifi" class="w-3.5 h-3.5 text-slate-300"></i>
+        <i data-lucide="battery" class="w-4 h-4 text-emerald-400"></i>
+      </div>
+    </div>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <div id="app-view" class="flex-1 overflow-y-auto pb-24 relative">
+      <!-- Dynamic Views Render Here -->
+    </div>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="absolute bottom-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/80 flex justify-around items-center py-2 px-1 text-[10px] font-semibold z-30 shadow-lg">
+      <button onclick="switchTab('home')" id="nav-home" class="flex flex-col items-center py-1 px-2 text-emerald-600 transition-all">
+        <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
+        <span>Home</span>
+      </button>
+
+      <button onclick="switchTab('refinery')" id="nav-refinery" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-emerald-600 transition-all">
+        <i data-lucide="factory" class="w-5 h-5 mb-0.5"></i>
+        <span>Refinery</span>
+      </button>
+
+      <!-- Center Scan Button -->
+      <button onclick="switchTab('scan')" class="flex flex-col items-center -mt-6">
+        <div class="bg-emerald-600 text-white p-3.5 rounded-full shadow-lg shadow-emerald-600/40 border-4 border-slate-50 pulse-ring hover:bg-emerald-500 transition-all active:scale-95">
+          <i data-lucide="qr-code" class="w-6 h-6"></i>
+        </div>
+        <span class="text-[10px] font-bold text-emerald-700 mt-1">Scan Tag</span>
+      </button>
+
+      <button onclick="switchTab('pumps')" id="nav-pumps" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-emerald-600 transition-all">
+        <i data-lucide="map-pin" class="w-5 h-5 mb-0.5"></i>
+        <span>Pumps</span>
+      </button>
+
+      <button onclick="switchTab('vault')" id="nav-vault" class="flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-600 transition-all">
+        <i data-lucide="box" class="w-5 h-5 mb-0.5"></i>
+        <span>Vault</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script>
+    let satyaState = {
+      mfgCost: 45,
+      retailPrice: 55,
+      cappedProfit: 10,
+      purity: 97,
+      kitPrice: 3400,
+      chennaiVehicles: 1420,
+      targetVehicles: 10000,
+      bioBitumenKm: 18.4,
+      landfillMassTons: 1250
+    };
+
+    let fleetVehicles = [
+      {
+        id: "SATYA-CH4-01",
+        slug: "auto-captain-01",
+        name: "Bajaj RE Auto (Seeded Captain)",
+        driver: "Captain Murugan",
+        zone: "T. Nagar, Chennai",
+        kitStatus: "₹3,400 Kit Installed",
+        fuelSavedLiters: 340,
+        co2SavedKg: 180.5,
+        bom: [
+          { component: "Venturi Mixer Plate", status: "Installed" },
+          { component: "Zero Pressure Regulator", status: "Calibrated" },
+          { component: "Inline Flashback Arrestor", status: "Tested OK" }
+        ],
+        history: [
+          { date: "03/11/2026", title: "Free Seeded Kit Installed", subtitle: "Satya CH4 Pump #4, Anna Salai", desc: "Successfully retrofitted for ₹55/kg biomethane fuel consumption." }
+        ]
+      },
+      {
+        id: "SATYA-CH4-02",
+        slug: "zomato-delivery-02",
+        name: "TVS Jupiter Delivery Fleet",
+        driver: "Karthik R. (Zomato Partner)",
+        zone: "Velachery, Chennai",
+        kitStatus: "Active Fleet Retrofit",
+        fuelSavedLiters: 190,
+        co2SavedKg: 95.0,
+        bom: [
+          { component: "Venturi Mixer Plate", status: "Installed" },
+          { component: "Zero Pressure Regulator", status: "Calibrated" }
+        ],
+        history: [
+          { date: "01/11/2026", title: "B2B Fleet Onboarding", subtitle: "Velachery Hub", desc: "Converted to biomethane to slash daily delivery fuel expenses." }
+        ]
+      }
+    ];
+
+    let chennaiPumps = [
+      { name: "Anna Salai Petro Bunk #4", location: "Mount Road, Chennai", mapsQuery: "Anna+Salai+Petrol+Bunk+Chennai", status: "Active (₹55/kg)", stock: "8,400 kg Available" },
+      { name: "T. Nagar Fuel Station", location: "South Boag Road, Chennai", mapsQuery: "T+Nagar+Petrol+Bunk+Chennai", status: "Active (₹55/kg)", stock: "5,200 kg Available" },
+      { name: "Velachery Energy Hub", location: "100 Feet Road, Chennai", mapsQuery: "Velachery+100+Feet+Road+Petrol+Bunk+Chennai", status: "Active (₹55/kg)", stock: "6,900 kg Available" },
+      { name: "Adyar Petrol & Biomethane Stop", location: "LB Road, Chennai", mapsQuery: "Adyar+LB+Road+Petrol+Bunk+Chennai", status: "Active (₹55/kg)", stock: "4,100 kg Available" }
+    ];
+
+    let currentTab = 'home';
+    let html5QrScanner = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderAppView('home');
+      lucide.createIcons();
+
+      // Register Service Worker for Play Store PWA compliance
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    });
+
+    function switchTab(tab) {
+      if (html5QrScanner) {
+        html5QrScanner.stop().catch(() => {});
+        html5QrScanner = null;
+      }
+      currentTab = tab;
+      document.querySelectorAll('nav button').forEach(btn => {
+        btn.classList.remove('text-emerald-600');
+        btn.classList.add('text-slate-400');
+      });
+      const activeNav = document.getElementById(`nav-${tab}`);
+      if (activeNav) {
+        activeNav.classList.remove('text-slate-400');
+        activeNav.classList.add('text-emerald-600');
+      }
+      renderAppView(tab);
+    }
+
+    function renderAppView(view) {
+      const container = document.getElementById('app-view');
+
+      if (view === 'home') {
+        container.innerHTML = `
+          <div class="p-5 space-y-5 animate-in fade-in duration-150">
+            <!-- Hero Card -->
+            <div class="satya-gradient text-white p-5 rounded-3xl shadow-xl relative overflow-hidden border border-emerald-500/30">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-bold tracking-widest uppercase bg-white/20 text-white px-2.5 py-1 rounded-full backdrop-blur-md">
+                  POWERED BY LIFELOOP
+                </span>
+                <i data-lucide="flame" class="w-5 h-5 text-amber-300"></i>
+              </div>
+
+              <div class="mt-4">
+                <h1 class="text-2xl font-black tracking-tight">Satya CH4</h1>
+                <p class="text-xs text-emerald-100 mt-0.5">Zero-Waste Municipal Landfill Mining & Biomethane Fuel</p>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-white/20 grid grid-cols-2 gap-2 text-white">
+                <div>
+                  <p class="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Fuel Retail Price</p>
+                  <p class="text-xl font-extrabold text-emerald-200">₹55 / kg</p>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase tracking-wider text-white/70 font-semibold">Retrofit Kit</p>
+                  <p class="text-xl font-extrabold text-amber-200">₹3,400</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chennai SOM Progress -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+              <div class="flex justify-between items-center">
+                <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Chennai Year-1 SOM Target</h2>
+                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">${satyaState.chennaiVehicles} / ${satyaState.targetVehicles} Vehicles</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                <div class="bg-emerald-600 h-full rounded-full" style="width: 14.2%"></div>
+              </div>
+              <p class="text-[10px] text-slate-500">Seeded Auto-Captains & Zomato/Swiggy delivery fleets active.</p>
+            </div>
+
+            <!-- Quick Action Grid -->
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="switchTab('refinery')" class="bg-slate-900 text-white p-4 rounded-2xl shadow-sm text-left space-y-2 hover:bg-slate-800 transition">
+                <div class="bg-white/10 w-8 h-8 rounded-xl flex items-center justify-center text-emerald-400">
+                  <i data-lucide="factory" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-sm">Refinery Engine</p>
+                  <p class="text-[10px] text-slate-400">PSA & Bio-Bitumen</p>
+                </div>
+              </button>
+
+              <button onclick="switchTab('pumps')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-4 rounded-2xl shadow-lg shadow-emerald-600/20 text-left space-y-2 transition">
+                <div class="bg-white/20 w-8 h-8 rounded-xl flex items-center justify-center">
+                  <i data-lucide="map-pin" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <p class="font-bold text-sm">Pump Locator</p>
+                  <p class="text-[10px] text-emerald-100">Live Google Maps</p>
+                </div>
+              </button>
+            </div>
+
+            <!-- Fleet Passports List -->
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Active Fleet Passports</h2>
+                <button onclick="switchTab('vault')" class="text-xs text-emerald-600 font-bold hover:underline">View All →</button>
+              </div>
+
+              <div class="space-y-2.5">
+                ${fleetVehicles.map(f => `
+                  <div onclick="renderVehiclePassport('${f.slug}')" class="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between cursor-pointer hover:border-emerald-500 transition">
+                    <div class="flex items-center space-x-3">
+                      <div class="bg-emerald-50 text-emerald-700 p-2.5 rounded-xl font-bold text-xs">
+                        <i data-lucide="car" class="w-5 h-5"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs font-bold text-slate-800">${f.name}</p>
+                        <p class="text-[10px] text-slate-500">${f.id} • ${f.driver}</p>
+                      </div>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">${f.kitStatus}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      else if (view === 'refinery') {
+        container.innerHTML = `
+          <div class="p-5 space-y-4 animate-in fade-in duration-150">
+            <div>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Refinery Operations</span>
+              <h1 class="text-lg font-bold text-slate-800 mt-1">Landfill Mining & Pyrolysis</h1>
+              <p class="text-xs text-slate-500">Upgrading raw landfill gas & converting waste into road bitumen</p>
+            </div>
+
+            <!-- Unit Economics Card -->
+            <div class="bg-slate-900 text-white p-4 rounded-2xl border border-slate-800 space-y-3">
+              <h2 class="text-xs font-bold text-amber-400 uppercase tracking-wider">Biomethane Unit Economics</h2>
+              <div class="grid grid-cols-2 gap-2 text-xs border-b border-slate-800 pb-3">
+                <div>
+                  <span class="text-slate-400 text-[10px]">Manufacturing Cost</span>
+                  <p class="font-bold text-white">₹${satyaState.mfgCost} / kg</p>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px]">Capped Profit Margin</span>
+                  <p class="font-bold text-emerald-400">₹${satyaState.cappedProfit} / kg</p>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px]">Pump Retail Price</span>
+                  <p class="font-bold text-emerald-300 text-sm">₹${satyaState.retailPrice} / kg</p>
+                </div>
+                <div>
+                  <span class="text-slate-400 text-[10px]">Upgraded Purity</span>
+                  <p class="font-bold text-emerald-400">${satyaState.purity}% (PSA)</p>
+                </div>
+              </div>
+
+              <div>
+                <p class="text-[10px] text-slate-400 uppercase font-semibold">₹3,400 Conversion Kit Components</p>
+                <div class="mt-1 flex flex-wrap gap-1">
+                  <span class="bg-slate-800 text-emerald-300 text-[10px] px-2 py-0.5 rounded">Venturi Mixer Plate</span>
+                  <span class="bg-slate-800 text-emerald-300 text-[10px] px-2 py-0.5 rounded">Zero Pressure Regulator</span>
+                  <span class="bg-slate-800 text-emerald-300 text-[10px] px-2 py-0.5 rounded">Inline Flashback Arrestor</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bio-Bitumen Roads -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+              <div class="flex items-center space-x-2 text-emerald-600 font-bold text-xs">
+                <i data-lucide="layers" class="w-4 h-4"></i>
+                <span>Bio-Bitumen Road Infrastructure</span>
+              </div>
+              <p class="text-[11px] text-slate-600 leading-relaxed">
+                Pyrolysis converts remaining municipal organic sludge & waste plastics into waterproof, pothole-resistant road bitumen.
+              </p>
+              <div class="pt-2 flex justify-between text-xs font-semibold text-slate-700">
+                <span>Paved Municipal Roads:</span>
+                <span class="text-emerald-600 font-bold">${satyaState.bioBitumenKm} km</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      else if (view === 'pumps') {
+        container.innerHTML = `
+          <div class="p-5 space-y-4 animate-in fade-in duration-150">
+            <div>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Retail Infrastructure</span>
+              <h1 class="text-lg font-bold text-slate-800 mt-1">Chennai Biomethane Pumps</h1>
+              <p class="text-xs text-slate-500">Partnered petrol bunks retailing biomethane at ₹55/kg</p>
+            </div>
+
+            <div class="space-y-3">
+              ${chennaiPumps.map(p => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold text-sm text-slate-800">${p.name}</h3>
+                      <p class="text-[11px] text-slate-500">${p.location}</p>
+                    </div>
+                    <span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">${p.status}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-100">
+                    <span class="text-slate-600">Stock: <strong>${p.stock}</strong></span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=${p.mapsQuery}" target="_blank" class="bg-slate-900 text-white px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1 hover:bg-slate-800 transition">
+                      <i data-lucide="navigation" class="w-3 h-3 text-emerald-400"></i>
+                      <span>Directions</span>
+                    </a>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      else if (view === 'scan') {
+        container.innerHTML = `
+          <div class="p-5 flex flex-col items-center justify-between min-h-[75vh] text-center animate-in fade-in duration-150">
+            <div>
+              <span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                Live QR Scanner
+              </span>
+              <h2 class="text-lg font-bold text-slate-800 mt-2">Scan Retrofit Kit Tag</h2>
+              <p class="text-xs text-slate-500 max-w-xs mt-1">Point your camera at any Satya CH4 retrofit QR code.</p>
+            </div>
+
+            <div class="w-full bg-slate-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-800 my-4 relative min-h-[220px] flex items-center justify-center">
+              <div id="reader" class="w-full"></div>
+            </div>
+
+            <div class="w-full space-y-2 text-xs">
+              <button onclick="simulatedScan('auto-captain-01')" class="w-full bg-emerald-600 text-white p-3 rounded-xl font-bold shadow">
+                [Demo] Scan Auto-Captain Retrofit Tag
+              </button>
+            </div>
+          </div>
+        `;
+
+        setTimeout(() => {
+          initCameraScanner();
+        }, 100);
+      }
+      else if (view === 'vault') {
+        container.innerHTML = `
+          <div class="p-5 space-y-4 animate-in fade-in duration-150">
+            <div class="flex justify-between items-center">
+              <div>
+                <h1 class="text-lg font-bold text-slate-800">Fleet Passport Vault</h1>
+                <p class="text-xs text-slate-500">${fleetVehicles.length} Retrofit Passports Registered</p>
+              </div>
+              <button onclick="renderNewPassportForm()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow">
+                + Mint Passport
+              </button>
+            </div>
+
+            <div class="space-y-3">
+              ${fleetVehicles.map(f => `
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <div class="flex justify-between items-start border-b pb-2">
+                    <div>
+                      <span class="text-[10px] text-emerald-600 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded">${f.id}</span>
+                      <h3 class="font-bold text-sm text-slate-800 mt-1">${f.name}</h3>
+                      <p class="text-[11px] text-slate-500">${f.driver} • ${f.zone}</p>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">${f.kitStatus}</span>
+                  </div>
+
+                  <div class="pt-1 flex gap-2">
+                    <button onclick="renderVehiclePassport('${f.slug}')" class="flex-1 bg-slate-900 text-white text-xs font-bold py-2 rounded-xl">
+                      Open Passport
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      lucide.createIcons();
+    }
+
+    function initCameraScanner() {
+      if (typeof Html5Qrcode === "undefined") return;
+      html5QrScanner = new Html5Qrcode("reader");
+      html5QrScanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 200, height: 200 } },
+        (decodedText) => {
+          html5QrScanner.stop().then(() => {
+            html5QrScanner = null;
+            onQrCodeDetected(decodedText);
+          });
+        },
+        () => {}
+      ).catch(() => {});
+    }
+
+    function onQrCodeDetected(text) {
+      confetti({ particleCount: 60, spread: 70, origin: { y: 0.6 } });
+      renderVehiclePassport('auto-captain-01');
+    }
+
+    function simulatedScan(slug) {
+      confetti({ particleCount: 50, spread: 60, origin: { y: 0.6 } });
+      renderVehiclePassport(slug);
+    }
+
+    function renderNewPassportForm() {
+      const container = document.getElementById('app-view');
+      container.innerHTML = `
+        <div class="p-5 space-y-4 animate-in fade-in duration-150">
+          <div>
+            <h1 class="text-lg font-bold text-slate-800">Mint New Retrofit Passport</h1>
+            <p class="text-xs text-slate-500">Register a new vehicle conversion kit on Satya CH4</p>
+          </div>
+
+          <form onsubmit="handleMintPassport(event)" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 text-xs">
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Vehicle / Fleet Name</label>
+              <input id="input-title" type="text" required placeholder="e.g. Piaggio Ape Auto" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Driver / Captain Name</label>
+              <input id="input-driver" type="text" required placeholder="e.g. Selvam Kumar" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50">
+            </div>
+            <div>
+              <label class="font-bold text-slate-700 block mb-1">Chennai Zone</label>
+              <input id="input-zone" type="text" required placeholder="e.g. Adyar, Chennai" class="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md mt-2">
+              Mint Retrofit Passport
+            </button>
+          </form>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function handleMintPassport(e) {
+      e.preventDefault();
+      const title = document.getElementById('input-title').value;
+      const driver = document.getElementById('input-driver').value;
+      const zone = document.getElementById('input-zone').value;
+
+      const newSlug = "vehicle-" + Date.now();
+      const newId = "SATYA-CH4-" + Math.floor(10 + Math.random() * 90);
+
+      const newObj = {
+        id: newId,
+        slug: newSlug,
+        name: title,
+        driver: driver,
+        zone: zone,
+        kitStatus: "₹3,400 Kit Installed",
+        fuelSavedLiters: 120,
+        co2SavedKg: 64.0,
+        bom: [
+          { component: "Venturi Mixer Plate", status: "Installed" },
+          { component: "Zero Pressure Regulator", status: "Calibrated" },
+          { component: "Inline Flashback Arrestor", status: "Tested OK" }
+        ],
+        history: [
+          { date: "03/11/2026", title: "Retrofit Kit Installed", subtitle: `Satya Station (${zone})`, desc: "Converted successfully to 97% pure biomethane at ₹55/kg." }
+        ]
+      };
+
+      fleetVehicles.unshift(newObj);
+      satyaState.chennaiVehicles++;
+      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+      renderVehiclePassport(newSlug);
+    }
+
+    function renderVehiclePassport(slug) {
+      const f = fleetVehicles.find(item => item.slug === slug);
+      if (!f) return;
+
+      const container = document.getElementById('app-view');
+
+      const bomItems = f.bom.map(b => `
+        <div class="flex justify-between items-center py-1.5 border-b border-slate-100 last:border-0 text-[11px]">
+          <p class="font-bold text-slate-800">${b.component}</p>
+          <span class="text-[9px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded border border-emerald-100">${b.status}</span>
+        </div>
+      `).join('');
+
+      const historyItems = f.history.map(h => `
+        <div class="relative pl-6 pb-4 border-l-2 border-emerald-500/30 last:border-0 last:pb-0">
+          <div class="absolute -left-[9px] top-0 bg-emerald-600 text-white p-1 rounded-full text-xs shadow-sm">
+            <i data-lucide="shield-check" class="w-3 h-3"></i>
+          </div>
+          <div class="space-y-1">
+            <p class="text-xs font-bold text-slate-800">${h.title}</p>
+            <p class="text-[10px] font-semibold text-emerald-600">${h.subtitle}</p>
+            <p class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-100 mt-1">${h.desc}</p>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="p-5 space-y-4 animate-in fade-in duration-150">
+          <button onclick="renderAppView('home')" class="text-xs font-bold text-slate-600 flex items-center space-x-1 hover:text-emerald-600">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            <span>Back to Dashboard</span>
+          </button>
+
+          <!-- Passport Header Card -->
+          <div class="satya-gradient text-white p-5 rounded-3xl shadow-xl relative overflow-hidden border border-emerald-500/30">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-[10px] font-mono tracking-widest text-emerald-300 uppercase font-bold">RETROFIT PASSPORT</span>
+                <h1 class="text-lg font-black mt-0.5">${f.name}</h1>
+                <p class="text-xs text-slate-300 font-mono">${f.id}</p>
+              </div>
+              <div id="qrcode-box" class="bg-white p-1.5 rounded-xl shadow-md"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-emerald-800/80 text-xs">
+              <div>
+                <span class="text-emerald-200 text-[10px] block">Driver / Captain</span>
+                <span class="font-bold text-white">${f.driver}</span>
+              </div>
+              <div>
+                <span class="text-emerald-200 text-[10px] block">Fuel Savings</span>
+                <span class="font-bold text-emerald-300 text-sm">₹55/kg Rate</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Component BOM Breakdown -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+            <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">₹3,400 Retrofit Kit Components</h2>
+            <div class="pt-1">
+              ${bomItems}
+            </div>
+          </div>
+
+          <!-- History Timeline -->
+          <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h2 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Installation Audit Trail</h2>
+              <span class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">Verified</span>
+            </div>
+            <div class="pt-2">
+              ${historyItems}
+            </div>
+          </div>
+        </div>
+      `;
+
+      lucide.createIcons();
+
+      setTimeout(() => {
+        const qrBox = document.getElementById("qrcode-box");
+        if (qrBox) {
+          qrBox.innerHTML = "";
+          new QRCode(qrBox, {
+            text: `SATYA-CH4:${f.id}:${f.slug}`,
+            width: 48,
+            height: 48,
+            colorDark: "#022c22",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+          });
+        }
+      }, 50);
+    }
+  </script>
+</body>
+</html>
